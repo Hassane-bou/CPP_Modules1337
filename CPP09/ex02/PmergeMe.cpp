@@ -17,17 +17,6 @@ PmergeMe& PmergeMe::operator=(const PmergeMe& obj)
     return *this;
 }
 
-// int  ParseInput(std::string input)
-// {
-//     int i = 0;
-//     while(input[i])
-//     {
-//         if(!(std::isdigit(input[i])))
-//             return 1;
-//         i++;
-//     }
-//     return 0;
-// }
 
 std::vector<int> ParseArgs(int argc,char **argv)
 {
@@ -83,7 +72,7 @@ std::vector<std::pair<int,int> >MakePairs(const std::vector<int> &v,bool &hasOdd
 {
     std::pair<int,int> p;
     std::vector<std::pair<int,int> > pairs;
-
+    int last = 0;
     size_t limite;
     if(v.size() % 2 == 0)
         limite = v.size();
@@ -92,17 +81,18 @@ std::vector<std::pair<int,int> >MakePairs(const std::vector<int> &v,bool &hasOdd
     
     for(size_t i = 0; i < limite;i+=2)
     {
-        if(v[i] > v[i + 1])
-        {
-            p.first = v[i];
-            p.second =v[i + 1];    
-        }
-        else
+        if(v[i+1] > v[i])
         {
             p.first = v[i+1];
             p.second = v[i];
-        }
             pairs.push_back(p);
+        }
+        else
+        {
+            p.first = v[i];
+            p.second =v[i + 1];    
+            pairs.push_back(p);
+        }
     }
 
     if(v.size() % 2 != 0)
@@ -125,82 +115,42 @@ std::vector <int> BuilDMainChain(std::vector <int> &G,std::vector <int> &P)
     return MainChain;
 }
 
-std::vector<std::pair<int,int> >mergeInsertSortPairs( std::vector<std::pair<int,int> > &pairs)
+std::vector<int>::iterator binarysearch(std::vector<int> &MainChain,int value,std::vector<int>::iterator limit)
 {
-    if(pairs.size() <= 1)
-        return pairs;
+    std::vector<int>::iterator low = MainChain.begin();
+    std::vector<int>::iterator hight = limit;
 
-    size_t mid = pairs.size() / 2;
-
-    std::vector<std::pair<int,int> > left;
-    std::vector<std::pair<int,int> > right;
-
-
-
-    for(size_t i = 0;i < mid; i++)
-        left.push_back(pairs[i]);
-    for(size_t i = mid; i < pairs.size() ;i++)
-        right.push_back(pairs[i]);
-    
-    left = mergeInsertSortPairs(left);
-    right = mergeInsertSortPairs(right);
-
-    
-    std::vector<std::pair<int,int> > res;
-
-    size_t i = 0,j = 0;
-    while( i < left.size() && j < right.size())
+    while (low < hight)
     {
-        if(left[i].first < right[j].first)
-        {
-            res.push_back(left[i]);
-            i++;
-        }
+        std::vector<int>::iterator  mid = low + (hight - low) / 2;
+        
+        if(*mid < value)
+            low = mid + 1;
         else
-        {
-            res.push_back(right[j]);
-            j++;
-        }
+            hight = mid;
     }
-    while(i < left.size())
-    {
-        res.push_back(left[i]);
-        i++;
-    }
-
-    while( j < right.size())
-    {
-        res.push_back(right[j]);
-        j++;
-    }
-
-    return res;
+    return low;
 }
-std::vector<size_t> GenerateJacobOrder(size_t n)
+
+
+void insertionSortRecursion(std::vector<int> &Main,int n)
 {
-    std::vector<size_t> order;
+    if(n <= 1)
+        return;
+    
+    insertionSortRecursion(Main,n-1);
 
-    size_t a = 0;
-    size_t b = 1;
+    int last = Main[n-1];
+    int j = n - 2;
 
-    if(n >= 1)
-        order.push_back(1);
-    while(true)
+    while(j >= 0 && Main[j] > last)
     {
-        size_t next;
-        next = b + 2 * a;
-        if(next > n)
-            break;
-        if(next != b)
-            order.push_back(next);
-        a = b;
-        b =next;
+        Main[j+1] = Main[j];
+        j--;
     }
+    Main[j+1] = last;
 
-    return order;
 }
-
-
 
 
 std::vector<int> mergeInsertSort(std::vector<int> &v)
@@ -210,33 +160,116 @@ std::vector<int> mergeInsertSort(std::vector<int> &v)
     bool hasOdd = false;
     int OddValue = 0;
     std::vector<std::pair<int,int> > pairs = MakePairs(v,hasOdd,OddValue);
+   
 
-    std::vector<std::pair<int,int> > PairSort = mergeInsertSortPairs(pairs);
-
-    std::cout << "PairSort trie: " << std::endl;
-    for(size_t i = 0;i < PairSort.size();i++)
-        std::cout << "{ " << PairSort[i].first << "," << PairSort[i].second << "}"  << "\n";
+    // Speare MainChian and pend
 
     std::vector<int> MainChain;
-
-    MainChain.push_back(PairSort[0].second);
-    MainChain.push_back(PairSort[0].first);
-
-    for(size_t i = 1; i < PairSort.size();i++)
-        MainChain.push_back(PairSort[i].first);
-
-    std::vector <int> remainingSmall;
-    for(size_t i = 1;i < PairSort.size();i++)
-        remainingSmall.push_back(PairSort[i].second);
-
-    size_t n = remainingSmall.size();
-    std::vector<size_t> JacobGenearte = GenerateJacobOrder(n);
+    std::vector<int> pend;
 
 
-    for(size_t i = 0;i < JacobGenearte.size();i++)
-        std::cout << JacobGenearte[i] << " ";
+    for(size_t i = 0; i < pairs.size();i++)
+    {
+        MainChain.push_back(pairs[i].first);
+        pend.push_back(pairs[i].second);
+    }
+      std::cout << "Main: ";
+    for(size_t i = 0; i < MainChain.size();i++)
+        std::cout << " " << MainChain[i] <<  " ";
+    std::cout <<"\n";
 
-    return remainingSmall;
+    std::vector<int> partners;
+    for(int i = 0; i < (int)MainChain.size();i++)
+        partners.push_back(MainChain[i]);
 
+    // sort MainChain
+        int n = MainChain.size();
+        insertionSortRecursion(MainChain,n);
+
+       std::cout << "MainChainAvecRecusion: ";
+        for(size_t i = 0; i < MainChain.size();i++)
+            std::cout << " " << MainChain[i] <<  " ";
+        std::cout <<"\n";
+
+     // main chain original
+
+ 
+    // insert first element pend in MainChain
+    MainChain.insert(MainChain.begin(),pend[0]);
+
+    //suite JacobSthal
+    std::vector<int> JacobSthal;
+
+    JacobSthal.push_back(0);
+    JacobSthal.push_back(1);
+
+    for(int i = 1; i < (int)pend.size();i++)
+    {
+        int n = JacobSthal.size();
+        int next = JacobSthal[n - 1] + 2 * JacobSthal[n - 2];
+        JacobSthal.push_back(next);
+    }
+    // Creer des groupes 
+
+    std::vector<int> Groupes;
+
+    for(int i = 1; i < (int)JacobSthal.size();i++)
+    {
+        int previous = JacobSthal[i - 1];
+        int current = JacobSthal[i];
+
+        int start = std::min(current,(int)pend.size() - 1);
+
+        for(int j = start;j > previous;j--)
+        Groupes.push_back(j);
+    }
+
+    std::cout << "La suite de JacobSthal: " << "\n";
+    for(size_t i = 0; i < JacobSthal.size();i++)
+        std::cout << "J(" << JacobSthal[i] <<  ")";
+    std::cout <<"\n";
+
+    std::cout << "Groupes: " << "\n";
+    for(size_t i = 0; i < Groupes.size();i++)
+        std::cout << "J(" << Groupes[i] <<  ")";
+    std::cout <<"\n";
+
+    //  std::cout << "Main: ";
+    // for(size_t i = 0; i < MainChain.size();i++)
+    //     std::cout << " " << MainChain[i] <<  " ";
+    // std::cout <<"\n";
+
+    std::cout << "pend: ";
+    for(size_t i = 0; i < pend.size();i++)
+        std::cout << " " << pend[i] <<  " ";
+    std::cout <<"\n";
+
+   
+
+    
+
+    // Inseret element avec binary search
+
+    for(int i = 0; i < (int)Groupes.size();i++)
+    {
+        int index = Groupes[i];
+
+        std::vector<int>::iterator limit = std::find(MainChain.begin(),MainChain.end(),partners[index]);
+
+
+        std::vector<int>::iterator pos = binarysearch(MainChain,pairs[index].second,limit);
+
+
+        MainChain.insert(pos,pairs[index].second);
+    }
+
+    //apres merge sort
+    std::cout << "Main Apres: ";
+    for(size_t i = 0; i < MainChain.size();i++)
+        std::cout << " " << MainChain[i] <<  " ";
+    std::cout <<"\n";
+    
+
+    return MainChain;
 }
 

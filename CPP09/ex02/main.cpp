@@ -26,9 +26,6 @@ int main(int ac,char **av)
 
     std::vector<int> sortedVector = mergeInsertSort(resulat);
 
-  
-
-    
     return 0;
 
 }
