@@ -11,20 +11,21 @@ int main(int ac,char **av)
     std::vector<int> resulat = ParseArgs(ac,av);
     if(resulat.empty())
     {
-        std::cout << "Error: Container empty." << std::endl;
+        std::cout << "Error" << std::endl;
         return 1;
     }
     std::deque<int> values =StoreValuesToDeque(resulat);
 
     std::cout << "Before: ";
-    for(size_t i = 0; i < values.size();i++)
+    for(size_t i = 0; i < resulat.size();i++)
     {
-        std::cout << values[i] << " ";
+        std::cout << resulat[i] << " ";
     }
     std::cout << std::endl;
 
 
-    std::vector<int> sortedVector = mergeInsertSort(resulat);
+    std::vector<int> sortedVector = mergeInsertSortVector(resulat);
+    std::deque<int> sortedDeque = mergeInsertSortdeque(values);
 
     return 0;
 
