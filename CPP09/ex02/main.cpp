@@ -22,8 +22,6 @@ int main(int ac,char **av)
         std::cout << resulat[i] << " ";
     }
     std::cout << std::endl;
-
-
     std::vector<int> sortedVector = mergeInsertSortVector(resulat);
     std::deque<int> sortedDeque = mergeInsertSortdeque(values);
 

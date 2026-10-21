@@ -153,7 +153,7 @@ std::deque<int> JacobSthalAlgoDeque(std::deque<int> &pend,std::deque<int> &MainC
     JacobSthal.push_back(0);
     JacobSthal.push_back(1);
 
-    for(int i = 1; i < (int)pend.size();i++)
+    while(JacobSthal.back() < (int) pend.size())
     {
         int n = JacobSthal.size();
         int next = JacobSthal[n - 1] + 2 * JacobSthal[n - 2];
@@ -171,9 +171,8 @@ std::deque<int> IndicesJacobSthalDeque(std::deque<int> &JacobSthal,std::deque<in
         int current = JacobSthal[i];
 
         int start = std::min(current,(int)pend.size() - 1);
-
         for(int j = start;j > previous;j--)
-        Groupes.push_back(j);
+            Groupes.push_back(j);
     }
     return Groupes;
 }
@@ -210,6 +209,7 @@ std::deque<int> mergeInsertSortdeque(std::deque<int> &d)
         if(pairs[i].first == MainChain[0])
         {
             firstPend = pairs[i].second;
+            pairs[i].first = -1;
             break;
         }
     }
@@ -234,6 +234,7 @@ std::deque<int> mergeInsertSortdeque(std::deque<int> &d)
             if(pairs[k].first == partners[index])
             {
                 ValueToInsert= pairs[k].second;
+                pairs[k].first = -1;
                 break;
             }
         }
@@ -352,8 +353,7 @@ std::vector<int> JacobSthalAlgo(std::vector<int> &pend,std::vector<int> &MainCha
 
     JacobSthal.push_back(0);
     JacobSthal.push_back(1);
-
-    for(int i = 1; i < (int)pend.size();i++)
+    while(JacobSthal.back() < (int) pend.size())
     {
         int n = JacobSthal.size();
         int next = JacobSthal[n - 1] + 2 * JacobSthal[n - 2];
@@ -365,16 +365,14 @@ std::vector<int> JacobSthalAlgo(std::vector<int> &pend,std::vector<int> &MainCha
 std::vector<int> IndicesJacobSthal(std::vector<int> &JacobSthal,std::vector<int> &pend)
 {
     std::vector<int> Groupes;
-
-    for(int i = 0; i < (int)JacobSthal.size();i++)
+    for(int i = 1; i < (int)JacobSthal.size();i++)
     {
         int previous = JacobSthal[i - 1];
         int current = JacobSthal[i];
-
+            
         int start = std::min(current,(int)pend.size() - 1);
-
         for(int j = start;j > previous;j--)
-        Groupes.push_back(j);
+            Groupes.push_back(j);
     }
     return Groupes;
 }
@@ -403,7 +401,6 @@ std::vector<int> mergeInsertSortVector(std::vector<int> &v)
     int n = MainChain.size();
     Recursion(MainChain,n);
 
-
     start = clock();
 
     // insert first element pend in MainChain
@@ -413,16 +410,17 @@ std::vector<int> mergeInsertSortVector(std::vector<int> &v)
         if(pairs[i].first == MainChain[0])
         {
             firstPend = pairs[i].second;
+            pairs[i].first = -1;
             break;
         }
     }
-    
+
     // main chain original
     std::vector<int> partners = MainChainPartners(MainChain);
     MainChain.insert(MainChain.begin(),firstPend);
     //suite JacobSthal
     std::vector<int> JacobSthal = JacobSthalAlgo(pend,MainChain);
-    // Creer des groupes 
+    // order of insertion: comination between the jacobSthal sequence and the real indexes
     std::vector<int> Groupes = IndicesJacobSthal(JacobSthal,pend);
    
 
@@ -436,14 +434,12 @@ std::vector<int> mergeInsertSortVector(std::vector<int> &v)
             if(pairs[k].first == partners[index])
             {
                 ValueToInsert= pairs[k].second;
+                pairs[k].first = -1;
                 break;
             }
         }
-
         std::vector<int>::iterator limit = std::find(MainChain.begin(),MainChain.end(),partners[index]);
-
         std::vector<int>::iterator pos = binarysearch(MainChain,ValueToInsert,limit);
-
         MainChain.insert(pos,ValueToInsert);
     }
 

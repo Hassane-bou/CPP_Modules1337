@@ -11,9 +11,15 @@ BitcoinExchange::BitcoinExchange()
         std::exit(1); 
     }
     std::getline(Filedata,line);
-
+    if(line.empty())
+    {
+        std::cout << "Error: file Data.cvs is empty" << std::endl;
+        std::exit(1);
+    }
     while(std::getline(Filedata,line))
     {
+        if(line.empty())
+            continue;
         size_t separ = line.find(',');
 
         std::string data = line.substr(0,separ);
@@ -164,7 +170,11 @@ void BitcoinExchange::RunFile(const std::string file)
             std::cout << " => " << value << std::endl;
             continue;
         }
-        float realvalue = std::stof(value);
+        float realvalue;
+        std::string str = value;
+        std::stringstream ss(str);
+        ss >> realvalue;
+
         if(realvalue < 0)
         {
             std::cout << "Error: not a positive number." << std::endl;
@@ -177,17 +187,14 @@ void BitcoinExchange::RunFile(const std::string file)
         }
 
         std::map<std::string ,float>::iterator it = _data.lower_bound(date);
-
-        if(it == _data.end())
+        
+        if(it == _data.end() || it->first != date)
             it--;
-
-        if(it == _data.begin() && it->first != date)
+        else if(it == _data.begin() && it->first != date)
         {
-            std::cout << "Error: bad input => " << date;
+            std::cout << "Error: bad input => " << date << std::endl;
             continue;
         }
-        if(it->first != date)
-            it--;
 
         std::cout << date << " => "  << realvalue << " = " << realvalue * it->second << std::endl;
 
